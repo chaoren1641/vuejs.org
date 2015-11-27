@@ -1,15 +1,15 @@
 title: 扩展 Vue
-type: guide
+type: 教程
 order: 14
 ---
 
-## 使用 Mixin 进行扩展
+## Mixins
 
-Mixin 是一种为 Vue 组件分发可复用功能的灵活的方式。你可以像写一个普通 Vue 组件的选项对象一样写出一个 mixin：
+Mixin (混入) 是一种可以在多个 Vue 组件之间灵活复用特性的机制。你可以像写一个普通 Vue 组件的选项对象一样编写一个 mixin：
 
 ``` js
 // mixin.js
-exports.mixin = {
+module.exports = {
   created: function () {
     this.hello()
   },
@@ -30,6 +30,8 @@ var Component = Vue.extend({
 var component = new Component() // -> "hello from mixin!"
 ```
 
+更多细节请参见 [API](/api/options.html#mixins)。
+
 ## 使用插件进行扩展
 
 通常插件会为 Vue 添加一个全局的功能。
@@ -39,7 +41,7 @@ var component = new Component() // -> "hello from mixin!"
 你可以撰写以下几种典型类型的插件：
 
 1. 添加一个或几个全局方法。比如 [vue-element](https://github.com/vuejs/vue-element)
-2. 添加一个或几个全局资源：指令、过滤器、过渡效果等。比如 [vue-touch](https://github.com/vuejs/vue-touch)
+2. 添加一个或几个全局资源：指令、过滤器、动画效果等。比如 [vue-touch](https://github.com/vuejs/vue-touch)
 3. 通过绑定到 `Vue.prototype` 的方式添加一些 Vue 实例方法。这里有个约定，就是 Vue 的实例方法应该带有 `$` 前缀，这样就不会和用户的数据和方法产生冲突了。
 
 ``` js
@@ -52,7 +54,7 @@ exports.install = function (Vue, options) {
 
 ### 使用插件
 
-假设我们使用的构建系统是 CommonJS，则：
+假设我们使用的构建系统是 CommonJS，则需要作如下调用：
 
 ``` js
 var vueTouch = require('vue-touch')
@@ -63,14 +65,21 @@ Vue.use(vueTouch)
 你也可以向插件里传递额外的选项：
 
 ```js
-Vue.use('my-plugin', {
+Vue.use(require('my-plugin'), {
   /* pass in additional options */
 })
 ```
 
-## 现有的工具
+## 现有的插件 & 工具
 
-- [vue-devtools](https://github.com/vuejs/vue-devtools)：一个用来 debug Vue.js 应用程序的 Chrome 开发者工具扩展。
+- [vue-router](https://github.com/vuejs/vue-router): 
+Vue.js 的官方路由程序。和 Vue.js 核心深度整合，分分钟构建单页面应用。
+- [vue-resource](https://github.com/vuejs/vue-resource): 一个插件，为用 XMLHttpRequest 或 JSONP 生成网络请求、响应提供服务。
+- [vue-async-data](https://github.com/vuejs/vue-async-data): 一个异步读取数据的插件。
+- [vue-validator](https://github.com/vuejs/vue-validator): 一个表单验证的插件。
+- [vue-devtools](https://github.com/vuejs/vue-devtools)：一个用来调试 Vue.js 应用程序的 Chrome 浏览器开发者工具扩展。
 - [vue-touch](https://github.com/vuejs/vue-touch)：添加基于 Hammer.js 的触摸手势的指令。
 - [vue-element](https://github.com/vuejs/vue-element): 用 Vue.js 注册 Custom Elements。
 - [用户贡献的工具列表](https://github.com/yyx990803/vue/wiki/User-Contributed-Components-&-Tools)
+
+下一节: [最佳实践与技巧](/guide/best-practices.html).

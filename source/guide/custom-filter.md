@@ -1,11 +1,11 @@
 title: 自定义过滤器
-type: guide
+type: 教程
 order: 10
 ---
 
-## 基本用法
+## 基础
 
-和自定义指令类似，你可以用全局方法 `Vue.filter()`，传递一个**过滤器 ID**和一个**过滤器函数**，注册一个自定义过滤器。过滤器函数会接受一个参数值并返回将其转换后的值：
+和自定义指令类似，你可以用全局方法 `Vue.filter()`，传递一个**过滤器 ID**和一个**过滤器函数**来注册一个自定义过滤器。过滤器函数会接受一个参数值并返回将其转换后的值：
 
 ``` js
 Vue.filter('reverse', function (value) {
@@ -18,7 +18,7 @@ Vue.filter('reverse', function (value) {
 <span v-text="message | reverse"></span>
 ```
 
-过滤器函数也接受任何内联的参数：
+过滤器函数也可以接受内联参数：
 
 ``` js
 Vue.filter('wrap', function (value, begin, end) {
@@ -28,47 +28,77 @@ Vue.filter('wrap', function (value, begin, end) {
 
 ``` html
 <!-- 'hello' => 'before hello after' -->
-<span v-text="message | wrap before after"></span>
+<span v-text="message | wrap 'before' 'after'"></span>
 ```
 
 ## 双向过滤器
 
-现在我们已经在展示视图之前用过滤器把模型里的值进行了转换。其实我们也可以定义一个过滤器在值从视图 (input 元素) 写回模型之前进行转换：
+到目前为止，我们使用过滤器都是把来自模型的值在显示到视图之前进行转换。其实我们也可以定义一个过滤器，在把来自视图的值（input 元素）在写回模型之前进行转换：
 
 ``` js
-Vue.filter('check-email', {
-  // read is optional in this case, it's here
-  // just for demo purposes.
-  read: function (val) {
-    return val
+Vue.filter('currencyDisplay', {
+  currencyDisplay: {
+    // model -> view
+    // formats the value when updating the input element.
+    read: function(val) {
+      return '$'+val.toFixed(2)
+    },
+    // view -> model
+    // formats the value when updating the data.
+    write: function(val, oldVal) {
+      var number = +val.replace(/[^\d.]/g, '')
+      return isNaN(number) ? 0 : number
+    }
+  }
+}
+```
+
+Demo:
+
+{% raw %}
+<div id="two-way-filter-demo" class="demo">
+  <input type="text" v-model="money | currencyDisplay">
+  <p>Model value: {{money}}</p>
+</div>
+<script>
+new Vue({
+  el: '#two-way-filter-demo',
+  data: {
+    money: 123.45
   },
-  // this will be invoked before writing to
-  // the model.
-  write: function (val, oldVal) {
-    return isEmail(val) ? val : oldVal
+  filters: {
+    currencyDisplay: {
+      read: function(val) {
+        return '$'+val.toFixed(2)
+      },
+      write: function(val, oldVal) {
+        var number = +val.replace(/[^\d.]/g, '')
+        return isNaN(number) ? 0 : number
+      }
+    }
   }
 })
-```
+</script>
+{% endraw %}
 
-## 过滤器上下文
+## 动态参数
 
-当一个过滤器被调用的时候，其 `this` 上下文会被设置为调用它的 Vue 实例。这使得我们可以根据其所属的 Vue 实例动态输出结果。
+如果一个过滤器参数没有被引号包裹，它会在当前 vm 的数据作用域里当做表达式进行动态求值。此外，过滤器函数的 `this` 上下文永远是调用它的当前 vm。
 
-For example:
-
-``` js
-Vue.filter('concat', function (value, key) {
-  // `this` points to the Vue instance invoking the filter
-  return value + this[key]
-})
-```
 ``` html
 <input v-model="userInput">
-<span>{&#123;msg | concat userInput&#125;}</span>
+<span>{{msg | concat userInput}}</span>
 ```
 
-在上面这个例子中，你用表达式即可完成相同的结果。但是面对更复杂的处理时，如果需要不止一个语句，你就得把它们放到一个可推导的属性中或一个自定义过滤器中。
+``` js
+Vue.filter('concat', function (value, input) {
+  // 这里 `input` === `this.userInput`
+  return value + input
+})
+```
 
-内建的 `filterBy` 和 `orderBy` 过滤器都是根据传入的数组以及所属 Vue 实例状态而运行的过滤器。
+在上面这个例子中，显然用内联表达式也可以达成相同的效果。但是面对更复杂的需求时，常常需要不止一个语句，这种情况下你就得把逻辑放到一个计算属性中或是一个自定义过滤器中。
 
-Alright！是时候了解[组件系统](../guide/components.html)的工作方式了。
+内建的 `filterBy` 和 `orderBy` 过滤器都是根据当前 Vue 实例的状态对传入的数组进行处理。
+
+很好！现在，是时候了解 Vue 的核心概念：[组件系统](../guide/components.html)了。

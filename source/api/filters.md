@@ -17,29 +17,29 @@ order: 7
 
 ### currency
 
-- 这个 filter 接受一个可选参数
+- 接受一个可选参数
 
 *12345 => $12,345.00*
 
-你可以传递一个可选参数来表示货币符号
+你可以传递一个可选参数来表示货币符号（默认为 $）。
 
 ### pluralize
 
-- 这个 filter 接受至少一个参数
+- 要求至少一个参数
 
-根据要处理的值来将参数转换为复数。当只有一个参数时，其复数形式就是在参数末尾加上“s”。当参数多于一个时，所有的参数将会以字符串数组的形式对应要被转换为复数的单词的“一倍”、“两倍”、“三倍”......形式。当复数的数量超过参数个数时，会使用最后一个参数。
+将值转为复数。如果只有一个参数，复数形式只是在末尾添加一个 “s”。如果有多个参数，参数列表对应于 1 个，2 个，3 个 … 。如果参数的个数不够，将使用最后一项。
 
-**例子：**
+**示例：**
 
 ``` html
-{&#123;count&#125;} {&#123;count | pluralize item&#125;}
+{{count}} {{count | pluralize 'item'}}
 ```
 
 *1 => '1 item'*  
 *2 => '2 items'*
 
 ``` html
-{&#123;date&#125;}{&#123;date | pluralize st nd rd th&#125;}
+{{date}}{{date | pluralize 'st' 'nd' 'rd' 'th'}}
 ```
 
 结果为:
@@ -52,20 +52,20 @@ order: 7
 
 ### json
 
-- 这个 filter 接受一个可选参数
+- 接受一个可选参数
 
-使用 `JSON.stringify()` 来处理值而不是直接将其字符串化（如 `[object Object]`)。这个 filter 接受一个可选参数来指定缩进级别（默认是 2）。
+使用 `JSON.stringify()` 来处理传入的值，而不是直接将其字符串化（如 `[object Object]`)。接受一个可选参数来指定缩进级别（默认是 2）。
 
 ``` html
-<pre>{&#123;$data | json 4&#125;}</pre>
+<pre>{{$data | json 4}}</pre>
 ```
 
 ### key
 
-- 这个 filter 只工作于 `v-on`
-- 这个 filter 接收一个参数
+- 只能和 `v-on` 指令协同使用
+- 要求至少一个参数
 
-包裹 handler 使得其仅在 keyCode 是指定的参数时才被调用。你也可以使用几个常用键值的别名：
+包装事件处理器，只有当 keyCode 等于参数时才调用它。对于一些常用的键也可以用字符串形式的别名：
 
 - enter
 - tab
@@ -75,64 +75,83 @@ order: 7
 - down
 - left
 - right
+- space
 
-**例子：**
+**示例：**
 
 ``` html
-<input v-on="keyup:doSomething | key enter">
+<input v-on="keyup:doSomething | key 'enter'">
 ```
 
-只有按回车键（enter）时才会调用 `doSomething` 。
+只有按回车键 (enter) 时才会调用 `doSomething`。
+
+### debounce (防反跳)
+
+- 只能和 `v-on` 指令协同使用
+- 可以附带一个可选参数
+
+将响应函数包装为 X 毫秒之后防反跳，X 就是这个参数，默认值是 300ms。一个防反跳的响应函数会延迟到这个调用之后 X 毫秒执行，如果响应函数在延迟执行之前再次被调用，则延迟时间会被重置为 X 毫秒。
 
 ### filterBy
 
-**语法：** `filterBy searchKey [in dataKey]`.
+**语法：** `filterBy searchKey [in dataKey...]`.
 
-- 这个 filter 只工作于 `v-repeat`
-- 这是一个 computed filter
+- 只能和数组协同使用
 
-使得 `v-repeat` 只显示数组过滤后的结果。`searchKey` 参数是当前 ViewModel 的一个属性名。这个属性的值会被用作查找的目标：
-
-``` html
-<input v-model="searchText">
-<ul>
-  <li v-repeat="users | filterBy searchText">{&#123;name&#125;}</li>
-</ul>
-```
-
-当使用这个 filter 时，将递归遍历 `users` 数组的每一个元素来寻找 `searchText` 的当前值从而过滤该数组。举例来说，如果一个条目是 `{ name: 'Jack', phone: '555-123-4567' }`，而 `searchText` 的值是 `'555'`，这个条目就被认为是符合条件。
-
-可选地，你可以通过 `in dataKey` 参数来指定具体要查找哪个属性：
+返回原数组过滤后的结果。`searchKey` 参数是当前 ViewModel 的一个属性名。这个属性的值会被用作查找的目标：
 
 ``` html
 <input v-model="searchText">
 <ul>
-  <li v-repeat="users | filterBy searchText in name">{&#123;name&#125;}</li>
+  <li v-repeat="users | filterBy searchText">{{name}}</li>
 </ul>
 ```
 
-现在只有当 `name` 属性包含 `searchText` 时这个条目才符合条件。所以当 `searchText` 的值是 `'555'` 时这个条目将不符合条件，而当值是 `'Jack'` 时即符合。
+当使用此过滤器时，将递归遍历 `users` 数组的每一个元素来寻找 `searchText` 的当前值从而过滤该数组。举例来说，如果一个条目是 `{ name: 'Jack', phone: '555-123-4567' }`，而 `searchText` 的值是 `'555'`，这个条目就被认为是符合条件。
 
-最后，你可以使用引号来表示字面量参数：
+你也可以通过可选的 `in dataKey` 参数来指定具体要在哪个属性中进行查找：
 
 ``` html
+<input v-model="searchText">
 <ul>
-  <li v-repeat="users | filterBy '555' in 'phone'">{&#123;name&#125;}</li>
+  <li v-repeat="user in users | filterBy searchText in 'name'">{{name}}</li>
 </ul>
+```
+
+现在只有当 `name` 属性包含 `searchText` 时这个条目才符合条件。所以当 `searchText` 的值是 `'555'` 时这个条目将不符合条件，而当值是 `'Jack'` 时则符合。
+
+> 0.12.11 更新
+
+从 0.12.11 开始你可以传入多个数据的键名：
+
+``` html
+<li v-repeat="user in uers | filterBy searchText in 'name' 'phone'"></li>
+```
+
+或者以数组形式传入一个动态的参数：
+
+``` html
+<!-- fields = ['fieldA', 'fieldB'] -->
+<div v-repeat="user in users | filterBy searchText in fields">
+```
+
+或者直接传入一个自定义过滤函数：
+
+``` html
+<div v-repeat="user in users | filterBy myCustomFilterFunction">
 ```
 
 ### orderBy
 
 **语法：** `orderBy sortKey [reverseKey]`.
 
-- 这个 filter 只工作于 `v-repeat`
-- 这是一个 computed filter
+- 只能和数组协同使用
 
-将 `v-repeat` 的结果排序。`sortKey`参数是当前 ViewModel 的一个属性名。这个属性的值表示用来排序的键名。可选的 `reverseKey` 参数也是当前 ViewModel 的一个属性名，如果这个属性值为真则数组会被倒序排列。
+返回原数组排序后的结果。`sortKey` 参数是当前 ViewModel 的一个属性名。这个属性的值表示用来排序的键名。可选的 `reverseKey` 参数也是当前 ViewModel 的一个属性名，如果这个属性值为真则数组会被倒序排列。
 
 ``` html
 <ul>
-  <li v-repeat="users | orderBy field reverse">{&#123;name&#125;}</li>
+  <li v-repeat="user in users | orderBy field reverse">{{name}}</li>
 </ul>
 ```
 
@@ -150,6 +169,6 @@ new Vue({
 
 ``` html
 <ul>
-  <li v-repeat="users | orderBy 'name' -1">{&#123;name&#125;}</li>
+  <li v-repeat="user in users | orderBy 'name' -1">{{name}}</li>
 </ul>
 ```

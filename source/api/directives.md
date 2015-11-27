@@ -4,34 +4,34 @@ order: 6
 ---
 
 ## 响应式指令 
- 
-> Directive 可以将自己与一个 Vue 实例的属性绑定，也可以与一个运行在实例上下文中的表达式绑定。当底层属性或表达式的值发生改变时，指令的`update()`方法会在下个 tick 异步地调用。
+
+> 指令可以将自己与一个 Vue 实例上的属性绑定，也可以与一个实例作用域中的表达式绑定。当属性或表达式的值发生改变时，指令的 `update()` 方法会在下一个事件循环中被异步调用。
+
 ### v-text
 
-更新元素的`textContent`
+更新元素的 `textContent`。
 
-本质上来说，&#123;&#123; Mustache &#125;&#125; 的插值也被当做文字节点上的`v-text`指令进行编译。
+{&#123; Mustache &#125;} 的插值也会被当做文字节点上的 `v-text` 指令进行编译。
+
 ### v-html
 
-更新元素的`innerHTML`
+更新元素的 `innerHTML`。
 
-<p class="tip">
-  在用户产生的数据中使用`v-html`比较危险。使用`v-html`时应确保数据的安全性，或通过自定义过滤器将不被信任的 HTML 内容进行处理。
-</p>
+将 `v-html` 绑定到用户提供的数据上会有 XSS 的风险，因此使用 `v-html` 时应确保数据的安全性，或通过自定义过滤器将不被信任的 HTML 内容进行预处理。
 
 ### v-show
 
-- 本指令可以触发动画效果。
+- 可触发过渡效果。
 
-根据绑定的真实值将元素的 display 属性设置为`none`或它的原始值。
+根据绑定值将元素的 display CSS 属性设置为 `none` 或它的原始值。
 
 ### v-class
 
-- 本元素接受配置参数
+- 接受一个可选的参数
 
-如果没有提供参数名，将会直接将绑定值加入到元素的 classList 中，当绑定值改变时更新元素的 class.
+如果没有提供参数，则将绑定值作为 CSS 类命字符串添加到元素的 classList 中。
  
-如果提供了参数名，则会根据绑定值的变化触发元素 class 的改变。多条合并使用会很方便。
+如果提供了参数，则会以参数为 CSS 类名，并根据绑定值的真伪进行切换。可以配合多重从句使用：
 
 ``` html
 <span v-class="
@@ -41,57 +41,62 @@ order: 6
 "></span>
 ```
 
+或者，你可以直接将该指令绑定到一个对象。对象的键值会作为类名被添加到元素的 classList，并根据对应值的真伪切换。
+
 ### v-attr
 
-- 本指令需要一个参数
+- 需要一个参数
 
-更新元素的指定属性（更新的属性由参数指定）
-**例子:**
+更新元素的指定特性（由参数指定）
+
+**示例:**
 
 ``` html
 <canvas v-attr="width:w, height:h"></canvas>
 ```
 
+除 0 外的其他伪值将移除该特性。
 
-本质上，普通属性中的 &#123;&#123; Mustache &#125;&#125; 插值会被编译到`v-attr`指令当中。
+或者，你可以直接将该指令绑定到一个对象。对象的键会被作为特性名称，根据对应的值的真伪进行切换。
+
+在内部，普通特性中的 {&#123; Mustache &#125;} 插值会被转换为 `v-attr` 指令进行编译。
+
+从 0.12.9 开始，当 `v-attr` 直接用在 `<input>` 元素的 `value` 特性中时，实际设置的会是其 `value` 属性 (property) 而不是特性 (attribute)。例如，`<input value="{% raw %}{{val}}{% endraw %}">` 不会更新其特性值，而是会直接设置其属性值。
  
-<p class="tip">
-  在为`<img>`元素设置`src`属性时，应该使用`v-attr`绑定而不是 mustache 模板绑定。浏览器会先于 Vue.js 对你的模板进行解析。所以当浏览器试图获取图片 URL 时，使用 &#123;&#123;mustache&#125;&#125; 模板绑定的数据会导致404错误。
-</p>
+<p class="tip">在为 `<img>` 元素设置 `src` 特性时，应该使用 `v-attr` 绑定而不是 mustache 模板绑定。浏览器会先于 Vue.js 对你的模板进行解析。所以当浏览器试图获取图片 URL 时，使用 mustache 模板绑定的数据会导致 404 错误。</p>
 
 ### v-style
 
+- 接受一个可选参数
 
-- 本指令接受一个配置参数
+为元素添加内联 CSS 样式。
 
-将CSS属性以内联的形式应用到元素上。
+如果没有参数名，绑定值可以是一个字符串或是一个对象。
 
-如果没有参数名，绑定值也可以使一个字符串或者一个对象。
+- 如果绑定值为字符串，则会将该元素的 `style.cssText` 属性设置为参数的值。
+- 如果绑定值为对象，对象里的每一对键值都将被赋值到元素的 style 对象上。
 
-- 如果参数值为字符串，则会将该元素的`style.cssText`属性设置为参数的值。
-- 如果参数值为对象，则每一对 key/value 都会被设置到元素的`style`对象上。
-
-**例子:**
+**示例:**
 
 ``` html
 <div v-style="myStyles"></div>
 ```
 
 ``` js
-// myStyles can either be a String:
+// myStyles 可以是字符串:
 "color:red; font-weight:bold;"
-// or an Object:
+// 也可以是对象:
 {
   color: 'red',
-  // both camelCase and dash-case works
+  // CSS 规则用驼峰格式和连字符格式都可以
   fontWeight: 'bold',
   'font-size': '2em'
 }
 ```
 
-如果有参数名的话，参数名会被当作 CSS 属性名使用。可以通过合并多个参数的方式同时设置多个属性。
+如果有参数的话，参数会被当作 CSS 规则名来用。可以配合多重从句添加多条规则：
 
-**例子:**
+**示例:**
 
 ``` html
 <div v-style="
@@ -101,41 +106,36 @@ order: 6
 "></div>
 ```
 
-`v-style`也可以智能的查找 CSS 属性是否需要浏览器前缀，所以你可以放心的使用无前缀版本的 CSS 属性。
+`v-style` 会智能地检测 CSS 规则是否需要浏览器前缀，所以你可以放心的使用无前缀版本的 CSS 规则。
 
 ``` html
-<!-- will use -webkit-transform if needed, for example -->
+<!-- 如果需要的话会自动使用 -webkit-transform -->
 <div v-style="transform: 'scale(' + scale + ')'"></div>
 ```
 
-<p class=“tip”>
-	因为 IE 浏览器的原因，这里推荐使用`v-style`指令来代替直接在 style 属性中使用 &#123;&#123;mustache&#125;&#125; 插值，这是因为在 IE 的所有版本中，都会在解析 HTML 时将非法的内联样式删除掉。
-</p>
+<p class="tip">由于 IE 的所有版本都会在解析 HTML 时将无法解析的内联样式删除，因此推荐统一使用 `v-style` 指令来代替 style 特性中的 &#123;&#123;mustache&#125;&#125; 插值。</p>
 
 ### v-on
 
-- 本指令需要一个参数名。
-- 本指令所需的值应该是一个函数或者声明。
+- 需要一个参数。
+- 绑定值应该是一个函数或者声明。
 
-
-为元素添加一个事件监听器。事件的类型由参数名来表示。这也是唯一可以和`key`过滤器一起使用的指令。详细请见[Listening for Events](../guide/events.html)。
-
+为元素添加一个 DOM 事件监听器。事件的类型由参数指定。这也是唯一可以和 `key` 过滤器一起使用的指令。详细请见[事件监听](../guide/events.html)。
 
 ### v-model
 
-- 本指令只能用在`<input>`, `<select>` 或 `<textarea>` 元素上。
-- 指令的参数有：`lazy`, `number`, `options`
+- 只能用于 `<input>`, `<select>` 或 `<textarea>` 元素。
+- 指令特性参数: [`lazy`](/guide/forms.html#惰性更新), [`number`](/guide/forms.html#转换为数字), [`options`](/guide/forms.html#动态_select_选项), [`debounce`](/guide/forms.html#输入_Debounce)
 
-
-在表单输入元素上创建双向绑定。默认情况下，每一个`input`事件都会让数据同步。详情请见[Handling Forms](../guide/forms.html).
+在表单 input 元素上创建一个双向绑定。默认在 input 事件时同步数据。详情请见[处理表单](../guide/forms.html).
 
 ### v-if
 
-- 本指令可以触发动画效果。
+- 可触发过渡效果。
 
-以绑定值为基础条件插入或删除元素。如果元素为`<template>`元素，则它的内容将会被提取出来作为条件块。
+基于绑定值的真伪，插入或移除元素。如果元素为 `<template>` 元素，则它的内容将会被提取出来作为被插入或移除的片段。
 
-**例子:**
+**示例:**
 
 ``` html
 <template v-if="test">
@@ -155,133 +155,75 @@ order: 6
 
 ### v-repeat
 
-- 本指令会创建子 Vue 实例。
-- 本指令的值应为一个数组、对象或数字。
-- 本指令可以触发动画效果。
-- 本指令接受一个配置参数。
-- 指令的参数：`trackby`
+- 会创建子 Vue 实例。
+- 绑定值应为一个数组、对象或数字。
+- 可触发过渡效果。
+- 接受一个可选参数。
+- 指令特性参数：[`track-by`](/guide/list.html#使用_track-by), [`stagger`](/guide/transitions.html#渐进过渡效果), [`enter-stagger`](/guide/transitions.html#渐进过渡效果), [`leave-stagger`](/guide/transitions.html#渐进过渡效果)
 
+为绑定的数组或对象中的每一项创建一个子 ViewModel 实例。如果值是一个数字，则会创建对应数量的子实例。当数组或对象的可变方法 (mutating method) 比如 `push()` 被调用，或是绑定的数字变化时，相应的子实例都会自动被创建或删除。
 
-为每一个绑定的数组或对象中的项创建一个子 ViewModel 。如果值是整数，则创建多个子 ViewModel 。当数组或对象的变质方法（ mutating method ）被调用，如`push()`方法，或者当数字值有增加或减少时，子 ViewModel 都会自动被创建或删除。
+如果没有提供参数，子实例会直接使用数组内分配的元素作为其 `$data`。如果值不是一个对象，则会将其作为 `$value` 直接存放在实例上。
 
-如果没有提供参数名，子 ViewModel 会直接使用指定的数组作为`$data`。如果值不是一个对象，则会创建一个数据包装对象，而值会被设置在别名为`$value`的 key 上。
-**例子:**
+**示例:**
 
 ``` html
 <ul>
   <li v-repeat="users">
-    {&#123;name&#125;} {&#123;email&#125;}
+    {{name}} {{email}}
   </li>
 </ul>
 ```
 
-如果提供了参数名，则通常会创建一个数据包装对象，用参数名字符串作为 key. 这使得模板中的属性访问更加的明确。
+如果提供了参数，则总是会创建一个数据包装对象，用参数字符串作为键名来存放原本的数据对象。别名参数可以使得模板中的数据访问更加清晰：
+
 ``` html
 <ul>
   <li v-repeat="user : users">
-    {&#123;user.name&#125;} {&#123;user.email&#125;}
+    {{user.name}} {{user.email}}
   </li>
 </ul>
 ```
 
-查看详细的例子，点这里 [Displaying a List](../guide/list.html).
-
-### v-with
-
-- 本指令只能与`v-component`一起使用。
-- 本指令只接受 keypaths, 而不是表达式。
-
-允许一个子 ViewModel 从父 ViewModel 继承数据。你可以传入一个对象，这个对象会被作为`data`项，或者也可以将单个的父级属性通过不同的 key 绑定到子级上。本指令必须与`v-component`组合使用。
-
-继承自一个对象的例子
-
-``` js
-// parent data looks like this
-{
-  user: {
-    name: 'Foo Bar',
-    email: 'foo@bar.com'
-  }
-}
-```
+0.12.8 引入了一种更自然的别名语法：
 
 ``` html
-<my-component v-with="user">
-  <!-- you can access properties without `user.` -->
-  {&#123;name&#125;} {&#123;email&#125;}
-</my-component>
+<ul>
+  <li v-repeat="user in users">
+    {{user.name}} {{user.email}}
+  </li>
+</ul>
 ```
 
-继承自单个属性（使用相同数据）的例子。
-``` 
-<my-component v-with="myName: user.name, myEmail: user.email">
-  <!-- you can access properties with the new keys -->
-  {&#123;myName&#125;} {&#123;myEmail&#125;}
-</my-component>
-```
-
-### v-events
-
-- 本指令只能与`v-component`一起使用
-- 本指令只接受 keypaths, 而不是表达式。
-
-允许一个父 Vue 实例监听一个子 Vue 实例上的事件。不同于`v-on`的是，`v-events`监听的是通过`vm.$emit()`创建的 Vue 组件系统事件，而不是 DOM 事件。本指令让父子通信进一步解耦，不需要在父组件中“硬编写”事件监听器。需要注意的是，本指令只能与`v-component`同时使用，即只能用在子组件的根元素上。
-
-**例子:**
-
-``` html
-<!-- inside parent template -->
-<div v-component="child" v-events="change: onChildChange"></div>
-```
-
-
-当子组件调用 `this.$emit('change', …)`时调用父元素的`onChildChange`方法，并将传给`$emit()`方法的额外参数会传入其中。
+更多详细示例，请参看[列表渲染](../guide/list.html).
 
 ## 字面指令
 
-> 字面指令将它的属性值当成纯字符串来处理。字面指令不把自己绑定到任何东西上。它们只将字符串值传入到`bind()`函数中执行一次。字面指令的值接受 &#123;&#123;mustache&#125;&#125; 表达式，但这个表达式只能随着首次编译执行一次，不会随着数据变化而变化。
-
-### v-component
-
-- 指令参数：`keep-alive`,`wait-for`,`transition-mode`
-
-使用一个已经注册过的组件构造器编译这个元素作为子 ViewModel. 这个指令可以使用`v-with`从父级继承数据。详细请看[Component System](../guide/components.html).
-
-### v-ref
-
-为了让父级更加方便的访问子级，可以在父级注册一个子组件的引用。本指令只有与`v-component`和`v-repeat`一起才能使用。在它父级的`$`对象上可以访问组件的实例。例子在[child reference](../guide/components.html#子组件引用).
-
-当该指令与`v-repeat`一起使用时，`v-ref`的值将会是一个包含了所有子 Vue 实例的数组，这个数组与子 Vue 实例绑定的数组是相对应的。
-
-### v-el
-
-在一个DOM元素上注册一个更容易被自身 Vue 实例访问的引用。如， `<div v-el="hi">`可以使用`vm.$$.hi`访问到。
-
-### v-partial
-
-使用一个注册过的 partial 替换元素的 innerHTML 值。可以使用`Vue.partial()`或传入`partials`参数的方式来注册一个 Partials 。 
-
-在`v-partial`中使用 {&#123; mustache&#125;} 标签可以让元素响应数据的改变。
-
-``` html
-<!-- content will change based on vm.partialId -->
-<div v-partial="{&#123;partialId&#125;}"></div>
-```
-
-你也可以使用这样的语法（不支持相应数据改变）。
-``` html
-<div>&#123;&#123;> my-partial&#125;&#125;</div>
-```
+> 字面指令将它们的特性值视为纯字符串，不会视图建立数据绑定。它们只负责调用 `bind()`函数一次。字面指令的值也可以包含 mustache 表达式插值，具体的处理方式请参考[动态字面指令](/guide/custom-directive.html#动态字面指令)。
 
 ### v-transition
 
-通知 Vue.js 为元素应用动画效果。动画 class 将会在某些能触发过渡的指令修改了元素时或当 Vue 实例中操作 DOM 的方法被调用时引用到元素上。
-详情请见[the guide on transitions](../guide/transitions.html).
+- 可以响应 Mustaches 插值
 
+通知 Vue.js 为元素应用过渡效果。当一个可以触发过渡效果的指令将元素插入或移除时，或是当 Vue 实例中操作 DOM 的方法被调用时，对应的过渡效果就会被应用到该元素上。
+
+详情请见[过渡系统](/guide/transitions.html)。
+
+### v-ref
+
+在父组件上注册一个引用到子组件，便于访问只能和组件或是 `v-repeat` 协同使用。注册之后，父级的 `$` 对象上可以访问注册的子实例。示例见[子组件引用](../guide/components.html#子组件引用).
+
+当该指令与 `v-repeat` 一起使用时，`v-ref` 注册的值将会是一个包含了所有子实例的数组，这个数组与 `v-repeat` 绑定的数组是相对应的。
+
+如果 `v-repeat` 的源数据是一个对象，则 `v-ref` 注册的值会是一个对象，按照键值包含对应的子实例。
+
+### v-el
+
+在 Vue 实例的 `$$` 对象里注册一个 DOM 元素的引用。比如 `<div v-el="hi">` 可以使用`vm.$$.hi` 获取。
 
 ## 空指令
 
-> 空指令不需要参数，并且会忽略它的属性值。
+> 空指令不需要参数，并且会忽略它的特性值。
 
 ### v-pre
 

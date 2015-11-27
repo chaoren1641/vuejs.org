@@ -1,3 +1,5 @@
+**注意：本 repo 即将停止更新，1.0.x 翻译决定重启一个[新项目](https://github.com/vuejs/cn.vuejs.org)。详情：https://github.com/Jinjiang/vuejs.org/issues/97**
+
 # vuejs.org
 
 该站点是通过 [hexo](http://hexo.io/) 搭建起来的。网站内容都是以 Markdown 格式放置在 `source` 目录下的。  
@@ -6,10 +8,10 @@
 
 ## 如何开始
 
-访问方式：`http://localhost:4000/vuejs.org/`:
+访问方式：`http://localhost:4000/`:
 
 ```
-$ [sudo] npm install -g hexo@2.5.7
+$ [sudo] npm install -g hexo
 $ npm install
 $ hexo server
 ```
@@ -18,16 +20,20 @@ $ hexo server
 
 (首字母顺序排序)
 
+* [@chaoren1641](https://github.com/chaoren1641)
 * [@etanxing](https://github.com/etanxing)
 * [@fengliu222](https://github.com/fengliu222)
+* [@fkysly](https://github.com/@fkysly)
+* [@FTAndy](https://github.com/FTAndy)
 * [@Garfielt](https://github.com/Garfielt)
 * [@getive](https://github.com/getive)
 * [@Jinjiang](https://github.com/Jinjiang)
 * [@kunth](https://github.com/kunth)
 * [@luin](https://github.com/luin)
+* [@lvdou](https://github.com/lvdou)
 * [@nkCoding](https://github.com/nkCoding)
 * [@skyline0705](https://github.com/skyline0705)
 * [@SoAanyip](https://github.com/SoAanyip)
 * [@Suixinlei](https://github.com/Suixinlei)
-* [@titancat](http://github.com/titancat)
+* [@titancat](https://github.com/titancat)
 * [@XfLoops](https://github.com/XfLoops)

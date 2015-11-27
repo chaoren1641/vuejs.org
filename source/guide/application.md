@@ -1,40 +1,44 @@
 title: 创建大型应用
-type: guide
+type: 教程
 order: 13
 ---
 
-Vue.js 会设计得尽量灵活——它只是一个接口库，不迁就于任何架构决策。尽管它在快速原型开发中显得非常有用，但对于经验较少的人来说，用它来构建大规模应用程序会有一定的难度。接下来我们会在如何使用 Vue.js 组织大型项目这方面提供一些的观点。
+Vue.js 在设计思想上追求的是尽可能的灵活。它本身只是一个界面库，并不强制使用哪种架构。这对于快速原型开发很有用，但是对于经验欠缺的开发者，用 Vue.js 构建大型应用可能会是一个挑战。在这里我会针对在使用 Vue.js 时如何组织大型的项目提供一些略带个人偏好的建议。
 
 ## 模块化
 
-虽然独立构建的 Vue.js 可以被用作一个全局变量，但是它通常更适合应用在一个模块化系统中，以便更好的组织你的代码。我们建议你在 CommonJS 的模块下撰写源代码 (这是 Node.js 使用的格式，也是 Vue.js 源代码使用的格式)，并通过 [Browserify](http://browserify.org/) 或 [Webpack](http://webpack.github.io/) 把它们捆绑起来。
+虽然独立构建的 Vue.js 可以被用作一个全局变量，但是它通常更适合配合一个模块化构建系统使用，这可以让你更好地组织代码。我的建议是用 CommonJS 模块格式编写源代码 (这是 Node.js 使用的格式，也是 Vue.js 源代码使用的格式)，并通过 [Webpack](http://webpack.github.io/) 或 [Browserify](http://browserify.org/) 把它们打包起来。
 
-Github上有一些构建的示例：
+更重要的是，Webpack 和 Browserify 不仅仅是模块打包工具。两者都提供源码转换的 API，允许你将你的源码用其他的预处理程序进行转换。例如，你可以用 [babel-loader](https://github.com/babel/babel-loader) 或 [babelify](https://github.com/babel/babelify) 直接在你的模块中使用 ES6/7 的语法。
 
-- [Vue + Browserify](https://github.com/vuejs/vue-browserify-example)
-- [Vue + Webpack](https://github.com/vuejs/vue-webpack-example)
+## 单文件组件
 
-## 一个文件对应一个组件
+在一个典型的 Vue.js 项目里，我们会希望将我们的代码拆分成许多的组件，并且在一个组件里把它所包含的 CSS 样式、HTML 模板、JavaScript 逻辑封装在一起。就像上面提到的那样，借助 Webpack 或 Browserify，并配以相应的源码转换插件，我们就可以这样编写组件了：
 
-在一个典型的 Vue.js 项目里，我们将会打散我们的代码，变成若干小的组件，如果能够根据组件划分把 CSS 样式也独立封装起来就更好了。刚才提过的2个构建工具都有一个额外的机制，那就是在把源代码捆绑在一起之前可以对其进行转换。再结合一些预处理，我们就可以这样撰写组件了：
+![](../images/vue-component.png)
 
-![](../images/vueify.png)
+如果你喜欢预处理器，你甚至可以这样写：
 
-如果你有预处理程序，你甚至可以这样写：
+![](../images/vue-component-with-pre-processors.png)
 
-![](../images/vueify_with_pre.png)
+你可以用 Webpack + [vue-loader](https://github.com/vuejs/vue-loader) 或 Browserify + [vueify](https://github.com/vuejs/vueify) 来编译这些单文件的 Vue 组件。如果你同时使用预处理器，则推荐用 Webpack 来进行构建，因为 Webpack 的插件 API 提供了更好的文件依赖追踪和缓存支持。
 
-它已经通过 [Vueify](https://github.com/vuejs/vueify) 为 Browserify 进行转换，或通过 [Vue-loader](https://github.com/vuejs/vue-loader) 为 Webpack 进行转换。
+在 GitHub 上可以找到上面所描述的工作流的代码示例：
+
+[Webpack + vue-loader](https://github.com/vuejs/vue-loader-example)
+[Browserify + vueify](https://github.com/vuejs/vueify-example)
 
 ## 路由
 
-你可以手动监听 hashchange 并利用一个动态的 `v-component` 实现一些基本的路由逻辑。
+对于单页面应用来说，我们推荐使用[官方 vue-router 库](https://github.com/vuejs/vue-router)，目前处于技术预览版阶段。更多详细内容请移步至 vue-router 的[文档](http://vuejs.github.io/vue-router/)。
 
-**Example:**
+如果你只是需要一些简单的路由逻辑，你也可以手动监听 hashchange 事件并利用一个动态的 `<component>` 来实现它：
+
+**示例：**
 
 ``` html
 <div id="app">
-  <div v-component="{&#123;currentView&#125;}"></div>
+  <component is="{{currentView}}"></component>
 </div>
 ```
 
@@ -51,17 +55,17 @@ var app = new Vue({
 app.currentView = 'page1'
 ```
 
-利用这种机制很容易接入独立的路由库，如 [Page.js](https://github.com/visionmedia/page.js) 或 [Director](https://github.com/flatiron/director)。
+利用这种机制我们同样可以很容易地接入外部的路由库，比如 [Page.js](https://github.com/visionmedia/page.js) 或是 [Director](https://github.com/flatiron/director)。
 
 ## 服务器通信
 
-所有的 Vue 实例都可以通过 `JSON.stringify()` 得到它们原始的 `$data`，没有任何副作用。你可以使用任何你喜欢的 Ajax 组件，比如 [SuperAgent](https://github.com/visionmedia/superagent)。也可以和诸如 Firebase 这样的 no-backend 服务完美配合。
+所有的 Vue 实例都可以直接通过 `JSON.stringify()` 序列化得到它们原始的 `$data`，并不需要做任何额外的工作。社区已经贡献了 [vue-resource](https://github.com/vuejs/vue-resource) 插件，提供了与 RESTful API 协作的功能。你也可以使用任何你喜欢的 Ajax 组件，比如 `$.ajax` 或是 [SuperAgent](https://github.com/visionmedia/superagent)。Vue.js 也可以和诸如 Firebase 和 Parse 这样的 BaaS 服务完美配合。
 
 ## 单元测试
 
-任何兼容 Common-JS 的构建系统都可以。建议使用 [Karma](http://karma-runner.github.io/0.12/index.html) test runner 结合 [CommonJS pre-processor](https://github.com/karma-runner/karma-commonjs) 对你的代码进行模块化测试。
+任何兼容 CommonJS 构建系统的测试工具都可以。建议使用 [Karma](http://karma-runner.github.io/0.12/index.html) 配合其 [CommonJS预处理插件](https://github.com/karma-runner/karma-commonjs) 对你的代码进行模块化测试。
 
-最佳实践是暴露出模块内的原始选项/函数。考虑一下这个示例：
+最佳实践是暴露出模块内的原始选项/函数。参考如下示例：
 
 ``` js
 // my-component.js
@@ -110,8 +114,50 @@ describe('my-component', function () {
 })
 ```
 
-<p class="tip">因为 Vue.js 指令异步反映数据的更新，当你需要在改变数据之后断言 DOM 的状态时，你需要在一个 `Vue.nextTick` 回调里完成断言。另外你可以在测试中设置 `Vue.config.async = false`，这样你就可以在数据改变之后同步断言 DOM 的状态了。</p>
+<p class="tip">因为 Vue.js 的指令异步响应数据的更新，当你需要在数据更新后断言 DOM 的状态时，你需要在一个 `Vue.nextTick` 回调里做这件事。</p>
 
-## 一个示例
 
-[Vue.js Hackernews Clone](https://github.com/yyx990803/vue-hackernews) 是一个应用的例子，它把 Webpack + vue-loader 用来代码组织、Director.js 用来做路由、HackerNews 官方的 Firebase API 为后端。这不算什么特别大的应用，但它结合并展示了本页面讨论到的各方面概念。
+## 发布至生产环境
+
+为了缩小体积，最小化后的独立版 Vue.js 已去除所有的警告信息，但当你用像 Browserify、Webpack 这样的工具构建 Vue.js 应用时，并没有一个明显的办法来去除这些警告。
+
+从 0.12.8 开始，可以采用如下的方式配置你的构建工具来优化最后生成的代码体积：
+
+### Webpack
+
+使用 Webpack 的 [DefinePlugin](http://webpack.github.io/docs/list-of-plugins.html#defineplugin) 来定义生产环境参数，这样警告相关的代码会变得永远不会被执行，从而在 UglifyJS 压缩的时候会被自动丢掉。比如：
+
+``` js
+var webpack = require('webpack')
+
+module.exports = {
+  // ...
+  plugins: [
+    // ...
+    new webpack.DefinePlugin({
+      'process.env': {
+        NODE_ENV: '"production"'
+      }
+    }),
+    new webpack.optimize.UglifyJsPlugin({
+      compress: {
+        warnings: false
+      }
+    })
+  ]
+}
+```
+
+### Browserify
+
+只需要在打包命令中把 `NODE_ENV` 设置成 `"production"` 即可。Vue 会自动应用 [envify](https://github.com/hughsk/envify) 转换并跳过警告处理。比如：
+
+``` bash
+NODE_ENV=production browserify -e main.js | uglifyjs -c -m > build.js
+```
+
+## 应用示例
+
+[Vue.js Hackernews Clone](https://github.com/yyx990803/vue-hackernews) 是一个应用的例子，它用 Webpack + vue-loader 代码组织、Director.js做路由、HackerNews 官方的 Firebase API 为后端。这不算什么特别大的应用，但它结合并展示了本页面讨论到的各方面概念。
+
+下一节：[扩展 Vue](../guide/extending.html)
